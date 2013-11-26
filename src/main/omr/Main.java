@@ -25,6 +25,7 @@ import omr.step.Stepping;
 import omr.ui.MainGui;
 import omr.ui.symbol.MusicFont;
 
+import omr.util.ClassUtil;
 import omr.util.Clock;
 import omr.util.Dumping;
 import omr.util.OmrExecutors;
@@ -41,7 +42,6 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -107,6 +107,12 @@ public class Main
         // Locale to be used in the whole application?
         checkLocale();
 
+        // Environment
+        showEnvironment();
+
+        // Native libs
+        loadNativeLibraries();
+
         if (!parameters.batchMode) {
             // For interactive mode
             logger.debug("Main. Launching MainGui");
@@ -114,18 +120,14 @@ public class Main
         } else {
             // For batch mode
 
-            // Version information
-            logger.info("Reference: {}:{}",
-                    WellKnowns.TOOL_REF, WellKnowns.TOOL_BUILD);
-
-            // Remember if at least one task has failed
+            // Remember if at least one task failed
             boolean failure = false;
 
             // Check MusicFont is loaded
             MusicFont.checkMusicFont();
 
             // Launch the required tasks, if any
-            List<Callable<Void>> tasks = new ArrayList<>();
+            List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
             tasks.addAll(getFilesTasks());
             tasks.addAll(getScriptsTasks());
 
@@ -133,8 +135,8 @@ public class Main
                 try {
                     logger.info("Submitting {} task(s)", tasks.size());
 
-                    List<Future<Void>> futures = OmrExecutors.
-                            getCachedLowExecutor().invokeAll(
+                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor()
+                            .invokeAll(
                             tasks,
                             constants.processTimeOut.getValue(),
                             TimeUnit.SECONDS);
@@ -144,7 +146,7 @@ public class Main
                     for (Future<Void> future : futures) {
                         try {
                             future.get();
-                        } catch (InterruptedException | ExecutionException ex) {
+                        } catch (Exception ex) {
                             logger.warn("Future exception", ex);
                             failure = true;
                         }
@@ -161,7 +163,8 @@ public class Main
 
             // Store latest constant values on disk?
             if (constants.persistBatchCliConstants.getValue()) {
-                ConstantManager.getInstance().storeResource();
+                ConstantManager.getInstance()
+                        .storeResource();
             }
 
             // Stop the JVM with failure status?
@@ -225,7 +228,7 @@ public class Main
      */
     public static List<Callable<Void>> getFilesTasks ()
     {
-        List<Callable<Void>> tasks = new ArrayList<>();
+        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
         // Launch desired step on each score in parallel
         for (final String name : parameters.inputNames) {
@@ -239,10 +242,14 @@ public class Main
                         throws Exception
                 {
                     if (!parameters.desiredSteps.isEmpty()) {
-                        logger.info("Launching {} on {} {}",
-                                parameters.desiredSteps, name,
-                                parameters.pages != null
-                                ? "pages " + parameters.pages : "");
+                        logger.info(
+                                "Launching {} on {} {}",
+                                parameters.desiredSteps,
+                                name,
+                                (parameters.pages != null)
+                                ? ("pages "
+                                   + parameters.pages)
+                                : "");
                     }
 
                     if (file.exists()) {
@@ -255,7 +262,8 @@ public class Main
                                     score);
                         } catch (ProcessingCancellationException pce) {
                             logger.warn("Cancelled " + score, pce);
-                            score.getBench().recordCancellation();
+                            score.getBench()
+                                    .recordCancellation();
                             throw pce;
                         } catch (Throwable ex) {
                             logger.warn("Exception occurred", ex);
@@ -343,7 +351,7 @@ public class Main
      */
     public static List<Callable<Void>> getScriptsTasks ()
     {
-        List<Callable<Void>> tasks = new ArrayList<>();
+        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
         // Launch desired scripts in parallel
         for (String name : parameters.scriptNames) {
@@ -356,8 +364,8 @@ public class Main
                 public Void call ()
                         throws Exception
                 {
-                    ScriptManager.getInstance().loadAndRun(
-                            new File(scriptName));
+                    ScriptManager.getInstance()
+                            .loadAndRun(new File(scriptName));
 
                     return null;
                 }
@@ -385,13 +393,16 @@ public class Main
     //-------------//
     private static void checkLocale ()
     {
-        final String localeStr = constants.locale.getValue().trim();
+        final String localeStr = constants.locale.getValue()
+                .trim();
 
         if (!localeStr.isEmpty()) {
             for (Locale locale : Locale.getAvailableLocales()) {
-                if (locale.toString().equalsIgnoreCase(localeStr)) {
+                if (locale.toString()
+                        .equalsIgnoreCase(localeStr)) {
                     Locale.setDefault(locale);
                     logger.debug("Locale set to {}", locale);
+
                     return;
                 }
             }
@@ -409,6 +420,44 @@ public class Main
         OmrExecutors.restart();
     }
 
+    //---------------------//
+    // loadNativeLibraries //
+    //---------------------//
+    /**
+     * Explicitly load all the needed native libraries.
+     */
+    private static void loadNativeLibraries ()
+    {
+        // Explicitly load all native libs resources and in proper order
+        logger.info("Loading native libraries ...");
+
+        boolean success = true;
+
+        if (WellKnowns.WINDOWS) {
+            // For Windows, drop only the ".dll" suffix
+            success &= ClassUtil.loadLibrary("jniTessBridge");
+            success &= ClassUtil.loadLibrary("libtesseract302");
+            success &= ClassUtil.loadLibrary("liblept168");
+        } else if (WellKnowns.LINUX) {
+            // For Linux, drop both the "lib" prefix and the ".so" suffix
+            success &= ClassUtil.loadLibrary("jniTessBridge");
+        }
+
+        if (success) {
+            logger.info("All libraries loaded.");
+        } else {
+            // Inform user of OCR installation problem
+            String msg = "Tesseract OCR is not installed properly";
+
+            if (Main.getGui() != null) {
+                Main.getGui()
+                        .displayError(msg);
+            } else {
+                logger.warn(msg);
+            }
+        }
+    }
+
     //---------//
     // process //
     //---------//
@@ -421,7 +470,8 @@ public class Main
             logger.warn("Exiting ...");
 
             // Stop the JVM, with failure status (1)
-            Runtime.getRuntime().exit(1);
+            Runtime.getRuntime()
+                    .exit(1);
         }
 
         // Interactive or Batch mode ?
@@ -445,6 +495,29 @@ public class Main
         }
     }
 
+    //-----------------//
+    // showEnvironment //
+    //-----------------//
+    /**
+     * Show the application environment to the user.
+     */
+    private static void showEnvironment ()
+    {
+        if (constants.showEnvironment.isSet()) {
+            logger.info(
+                    "Environment:\n" + "- Audiveris:    {}\n"
+                    + "- OS:           {}\n" + "- Architecture: {}\n"
+                    + "- Java VM:      {}",
+                    WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD,
+                    System.getProperty("os.name") + " "
+                    + System.getProperty("os.version"),
+                    System.getProperty("os.arch"),
+                    System.getProperty("java.vm.name") + " (build "
+                    + System.getProperty("java.vm.version") + ", "
+                    + System.getProperty("java.vm.info") + ")");
+        }
+    }
+
     //~ Inner Classes ----------------------------------------------------------
     //-----------//
     // Constants //
@@ -453,6 +526,10 @@ public class Main
             extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
+
+        private final Constant.Boolean showEnvironment = new Constant.Boolean(
+                true,
+                "Should we show environment?");
 
         private final Constant.String locale = new Constant.String(
                 "en",

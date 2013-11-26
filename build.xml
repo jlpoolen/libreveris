@@ -175,7 +175,7 @@
         </copy>
         
         <!-- Collection of specific files -->
-        <echo message="-- Building ${dist.dir}/resources/specifics.jar"/>
+        <echo message="== Building ${dist.dir}/resources/specifics.jar"/>
         <jar destfile="${dist.dir}/resources/specifics.jar">
             <fileset dir="dev" includes="windows/audiveris.bat" />
             <fileset dir="dev" includes="unix/audiveris.sh" />
@@ -183,19 +183,14 @@
         </jar>
         
         <!-- Populate plugins + examples + docs + train to dist/resources -->
-        <echo message="-- Building ${dist.dir}/resources/plugins.jar"/>
+        <echo message="== Building ${dist.dir}/resources/plugins.jar"/>
         <jar basedir="config" destfile="${dist.dir}/resources/plugins.jar" includes="plugins/**"/>
-        <echo message="-- Building ${dist.dir}/resources/examples.jar"/>
+        <echo message="== Building ${dist.dir}/resources/examples.jar"/>
         <jar basedir="data" destfile="${dist.dir}/resources/examples.jar" includes="examples/**/*"/>
-        <echo message="-- Building ${dist.dir}/resources/documentation.jar"/>
+        <echo message="== Building ${dist.dir}/resources/documentation.jar"/>
         <jar basedir="data" destfile="${dist.dir}/resources/documentation.jar" includes="www/**/*"/>
-        <echo message="-- Building ${dist.dir}/resources/train.jar"/>
+        <echo message="== Building ${dist.dir}/resources/train.jar"/>
         <jar basedir="data" destfile="${dist.dir}/resources/train.jar" includes="train/**/*"/>
-        <!-- Populate Windows Tesseract lib to ${dist.dir}/resources/ (for lack of a public URL) -->
-        <echo message="-- Building ${dist.dir}/resources/tesseract-windows-32bit.jar"/>
-        <jar basedir="dev/windows/dll/32bit" destfile="${dist.dir}/resources/tesseract-windows-32bit.jar" includes="liblept168.dll, libtesseract302.dll"/>
-        <echo message="-- Building ${dist.dir}/resources/tesseract-windows-64bit.jar"/>
-        <jar basedir="dev/windows/dll/64bit" destfile="${dist.dir}/resources/tesseract-windows-64bit.jar" includes="liblept168.dll, libtesseract302.dll"/>
     </target>
     <!-- =================== -->
     <!-- -gen-installer-file -->
@@ -240,7 +235,7 @@
         <property location="${generated.src.dir}/omr" name="program.id.dir"/>
         <mkdir dir="${program.id.dir}"/>
         <property location="${program.id.dir}/ProgramId.java" name="program.id.java"/>
-        <echo message="-- Generating ${program.id.java}"/>
+        <echo message="== Generating ${program.id.java}"/>
         <echo file="${program.id.java}"><![CDATA[
 package omr;
 
@@ -276,11 +271,11 @@ public class ProgramId
         <exec executable="hg" outputproperty="program.revision">
             <arg line="log -r tip --template &quot;{rev}&quot;"/>
         </exec>
-        <echo message="-- program.revision=${program.revision}"/>
+        <echo message="== program.revision=${program.revision}"/>
         <exec executable="hg" outputproperty="program.build">
             <arg line="log -r tip --template &quot;{node|short}&quot;"/>
         </exec>
-        <echo message="-- program.build=${program.build}"/>
+        <echo message="== program.build=${program.build}"/>
         <property name="version.revision" value="${version}.${program.revision}"/>
     </target>
     <!-- =============== -->
@@ -340,7 +335,7 @@ public class ProgramId
         <delete verbose="${verbose}">
             <fileset dir="${basedir}" includes="*.zip"/>
         </delete>
-        <echo message="-- Cleaning up target directory"/>
+        <echo message="== Cleaning up target directory"/>
         <delete dir="${basedir}/target" quiet="true" verbose="${verbose}"/>
     </target>
     <!-- ========= -->
@@ -370,7 +365,7 @@ public class ProgramId
     <!-- ======== -->
     <target name="-pre-jar">
         <!-- Prepare a (half) temporary manifest -->
-        <echo message="-- Pre-populating ${basedir}/manifest.mf"/>
+        <echo message="== Pre-populating ${basedir}/manifest.mf"/>
         <echo append="false" file="${basedir}/manifest.mf"><![CDATA[Manifest-Version: 1.0
 Built-By: ${CompanyName}
 Specification-Title: ${Name}
@@ -383,7 +378,7 @@ Implementation-Version: ${version.revision}
             <fileset dir="${build.classes.dir}" includes="**/*.html,**/doc-files/*,**/doc-files"/>
         </delete>
         <!-- Copy all resources to classes dir -->
-        <echo message="-- Copying resources to ${build.classes.dir}"/>
+        <echo message="== Copying resources to ${build.classes.dir}"/>
         <copy todir="${build.classes.dir}" verbose="$verbose">
             <fileset dir="${src.dir}" includes="**/*.properties"/>
             <fileset dir="${src.dir}" includes="**/icon*.png"/>

@@ -136,25 +136,24 @@ public class ClassUtil
      * Try to load a (library) file.
      *
      * @param file the file to load, which must point to the precise location
-     * @throws Exception
+     * @return true if succeeded, false otherwise (no exception is thrown)
      */
-    public static void load (File file)
-            throws Throwable
+    public static boolean load (File file)
     {
         String path = file.getAbsolutePath();
 
-        logger.debug("Loading file {} ...", path);
+        logger.info("Loading file {} ...", path);
 
         try {
             System.load(path);
 
-            logger.debug("Loaded  file {}", path);
-        } catch (Throwable ex) {
-            if (logger.isDebugEnabled()) {
-                logger.warn("Error while loading file " + path, ex);
-            }
+            logger.info("Loaded  file {}", path);
 
-            throw ex;
+            return true;
+        } catch (Throwable ex) {
+            logger.warn("Error while loading file " + path, ex);
+
+            return false;
         }
     }
 
@@ -175,7 +174,7 @@ public class ClassUtil
         try {
             System.loadLibrary(library);
 
-            logger.debug("Loaded  library {}", library);
+            logger.info("Loaded  library {}", library);
 
             return true;
         } catch (Throwable ex) {
