@@ -30,6 +30,7 @@ import omr.ui.util.WebBrowser;
 
 import omr.util.Memory;
 import omr.util.UriUtil;
+import omr.util.ExportMeasureCoordinates;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -156,7 +157,24 @@ public class GuiActions
         return new OptionsTask();
     }
 
-    //-------------------//
+    //
+    //---------------------------//
+    // exportMeasureCoordinates //
+    //---------------------------//
+    /**
+     * Exports the coordinates of the Measures
+     * 
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void exportMeasureCoordinates(ActionEvent e)
+    {
+	 logger.info("Exporting Measure Coordinates"); 
+         ExportMeasureCoordinates emc = new ExportMeasureCoordinates(); 
+         emc.export();
+    }
+    
+//-------------------//
     // defineShapeColors //
     //-------------------//
     /**
