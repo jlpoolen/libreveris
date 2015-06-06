@@ -11,24 +11,24 @@
 // </editor-fold>
 package omr.script;
 
-import omr.util.ExportMeasureCoordinates;
-
-import omr.sheet.Sheet;
 
 import java.io.File;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import omr.score.Score;
+import omr.sheet.Sheet;
+import omr.util.ExportMeasureCoordinates;
 
 /**
- * Class {@code ExportMeasureCoordinatesTask} exports measure coordinates to an XML file
+ * Class {@code ExportTask} exports measure coordinates to an XML file
  *    based on ExportTask
  *
  * @author John L. Poole
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public class ExportMeasureCoordinatesTask
+public class ExportMTask
         extends ScriptTask
 {
     //~ Instance fields --------------------------------------------------------
@@ -53,7 +53,7 @@ public class ExportMeasureCoordinatesTask
      * which normally goes to the same directory as the image
      * and has the same name as the image, but for the ".xml" suffix
      */
-    public ExportMeasureCoordinatesTask (String path)
+    public ExportMTask (String path)
     {
         this.path = path;
     }
@@ -62,7 +62,7 @@ public class ExportMeasureCoordinatesTask
     // ExportMeasureCoordinatesTask //
     //------------------------------//
     /** No-arg constructor needed by JAXB */
-    private ExportMeasureCoordinatesTask ()
+    private ExportMTask ()
     {
     }
 
@@ -73,7 +73,9 @@ public class ExportMeasureCoordinatesTask
     @Override
     public void core (Sheet sheet)
     {
-    	  ExportMeasureCoordinates emc = new ExportMeasureCoordinates();
+        logger.info("Invoking ExportMTask.core()");
+        Score s = sheet.getScore();
+    	  ExportMeasureCoordinates emc = new ExportMeasureCoordinates(s);
     	  emc.export();
         //ScoresManager.getInstance()
                 //.export(

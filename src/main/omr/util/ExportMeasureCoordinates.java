@@ -41,8 +41,7 @@ import org.slf4j.LoggerFactory;
  * @author jlpoole
  */
 public class ExportMeasureCoordinates {
-    private Score score;
-     
+    private Score myScore;
          /** Usual logger utility. */
     private static final Logger logger = 
             LoggerFactory.getLogger(ExportMeasureCoordinates.class);
@@ -51,20 +50,29 @@ public class ExportMeasureCoordinates {
     private Pattern p = Pattern.compile("^(.*)\\.(tiff?|png)$",
             Pattern.CASE_INSENSITIVE);
     SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss z");
+    //
+    // Constructors
+    //
     public ExportMeasureCoordinates() {
-      
+      myScore = ScoreController.getCurrentScore();
     }
+    public ExportMeasureCoordinates(Score s) {
+      myScore = s;
+    }
+    //
+    // Methods
+    //
     public void export(){
         String xmlFile = null;
         PrintWriter xmlWriter = null;
         Calendar calobj = Calendar.getInstance();
-        score  = ScoreController.getCurrentScore();
+        
 
         //
         // Create an output file with the same name, but ".xml" suffix
         //
-        String imageFile = score.getImageFile().getName();
-        String imageDir  = score.getImageFile().getParentFile().getAbsolutePath();
+        String imageFile = myScore.getImageFile().getName();
+        String imageDir  = myScore.getImageFile().getParentFile().getAbsolutePath();
         logger.info("imageFile = " + imageFile);
         logger.info("imageDir = " + imageDir);
         Matcher m = p.matcher(imageFile);
@@ -82,19 +90,20 @@ public class ExportMeasureCoordinates {
         }      
         int systemId, partId, measureId = 0;
         String xmlOut = "";
-        logger.info("score.getImagePath = {}",score.getImagePath());
+        logger.info("myScore.getImagePath = {}",myScore.getImagePath());
         // what is the current page ?
         // TODO: Danger need to identify current Page!
-        Page currentPage = score.getFirstPage();  
+        Page currentPage = myScore.getFirstPage();  
         
         List currentSystems = currentPage.getSystems();
-        xmlOut += indent + "<page id=\"" + score.getImagePath() + "\" ";
+        xmlOut += indent + "<page id=\"" + myScore.getImagePath() + "\" ";
         xmlOut += indent + "\nomrDate=\"" + sdf.format(calobj.getTime()) + "\" ";
         xmlOut += indent + "\nimageLastModified=\"" 
-                + sdf.format(score.getImageFile().lastModified()) + "\" ";
+                + sdf.format(myScore.getImageFile().lastModified()) + "\" ";
         //
         // TODO: add version of Libreveris, in case we want to rerun OMR
         //       later on with a revised version.
+        // TODO: extract form TIFF/PNG the resolution, time of creation?
         //
         xmlOut = closeElement(xmlOut);
         increaseIndent();

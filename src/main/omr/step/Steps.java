@@ -63,6 +63,8 @@ public class Steps
     public static final String PRINT = "PRINT";
 
     public static final String EXPORT = "EXPORT";
+    
+    public static final String EXPORTM = "EXPORTM";
 
     public static final String PLUGIN = "PLUGIN";
 
@@ -79,7 +81,12 @@ public class Steps
         addStep(new ScaleStep());
         addStep(new GridStep());
         addStep(new SystemsStep());
-        addStep(new MeasuresStep());
+        addStep(new MeasuresStep());  
+        //
+        // Sticking here since we do not want full conversion, don't know how
+        // to make optional after this step.
+        //
+        addStep(new ExportMStep());
         addStep(new TextsStep());
         addStep(new SticksStep());
         addStep(new SymbolsStep());
@@ -90,6 +97,7 @@ public class Steps
         // ---------------------------------
         addStep(new PrintStep());
         addStep(new ExportStep());
+
 
         // Plugin step depends on default plugin
         Plugin plugin = PluginsManager.getInstance()

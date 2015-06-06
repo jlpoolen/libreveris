@@ -82,6 +82,8 @@ public class Script
                     type = DeleteTask.class),
         @XmlElement(name = "export",
                     type = ExportTask.class),
+        @XmlElement(name = "exportm",
+                    type = ExportMTask.class),
         @XmlElement(name = "insert",
                     type = InsertTask.class),
         @XmlElement(name = "parameters",
