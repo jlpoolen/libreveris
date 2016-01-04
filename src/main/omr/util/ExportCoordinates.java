@@ -17,8 +17,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.*;
 
+import omr.CLI;
+import omr.Main;
 import omr.score.Score;
 import omr.score.entity.Measure;
 import omr.score.entity.Page;
@@ -40,11 +43,11 @@ import org.slf4j.LoggerFactory;
  * 
  * @author jlpoole
  */
-public class ExportMeasureCoordinates {
+public class ExportCoordinates {
     private Score myScore;
          /** Usual logger utility. */
     private static final Logger logger = 
-            LoggerFactory.getLogger(ExportMeasureCoordinates.class);
+            LoggerFactory.getLogger(ExportCoordinates.class);
     private String indent = "";
     private int defaultIndentSpace = 2;
     private Pattern p = Pattern.compile("^(.*)\\.(tiff?|png)$",
@@ -53,16 +56,19 @@ public class ExportMeasureCoordinates {
     //
     // Constructors
     //
-    public ExportMeasureCoordinates() {
+    public ExportCoordinates() {
       myScore = ScoreController.getCurrentScore();
     }
-    public ExportMeasureCoordinates(Score s) {
+    public ExportCoordinates(Score s) {
       myScore = s;
     }
     //
     // Methods
     //
-    public void export(){
+    public void export(){      
+        export(false);
+    }
+    public void export(boolean debug){
         String xmlFile = null;
         PrintWriter xmlWriter = null;
         Calendar calobj = Calendar.getInstance();
@@ -73,8 +79,28 @@ public class ExportMeasureCoordinates {
         //
         String imageFile = myScore.getImageFile().getName();
         String imageDir  = myScore.getImageFile().getParentFile().getAbsolutePath();
-        logger.info("imageFile = " + imageFile);
-        logger.info("imageDir = " + imageDir);
+        //
+        // if the Command Line Interface ("CLI") specified "-option exportdir ..."
+        // then we'll overide the directory
+        //
+        Properties cliProps =  Main.getCliConstants();
+        String exportDir = cliProps.getProperty("exportdir");
+        if (exportDir != null){
+            // verify the directory path exists
+            File dir = new File(exportDir);
+            if (dir.exists()){
+                imageDir = exportDir;
+            } else {
+                logger.error ("Directory not found for option 'exportDir' "
+                        + "having a value of '" 
+                        + exportDir + "' provided in command line,"
+                        + " Aborting export of coordinates.");
+                return;
+            }
+        }
+        
+        if (debug) logger.info("imageFile = " + imageFile);
+        if (debug) logger.info("imageDir = " + imageDir);
         Matcher m = p.matcher(imageFile);
         boolean outToFile = m.find();
         if (outToFile){
@@ -90,7 +116,7 @@ public class ExportMeasureCoordinates {
         }      
         int systemId, partId, measureId = 0;
         String xmlOut = "";
-        logger.info("myScore.getImagePath = {}",myScore.getImagePath());
+        if (debug) logger.info("myScore.getImagePath = {}",myScore.getImagePath());
         // what is the current page ?
         // TODO: Danger need to identify current Page!
         Page currentPage = myScore.getFirstPage();  
@@ -132,10 +158,10 @@ public class ExportMeasureCoordinates {
                     xmlOut += "      <measure id=\"" 
                             + curMeasure.getIdValue() + "\"";
                     
-                    logger.info("id = {}",curMeasure.getIdValue()); 
+                    if (debug) logger.info("id = {}",curMeasure.getIdValue()); 
                     Rectangle measureRect = curMeasure.getBox();
-                    logger.info(" rect.x = {}", measureRect.x);
-                    logger.info(" rect.y = {}", measureRect.y);
+                    if (debug) logger.info(" rect.x = {}", measureRect.x);
+                    if (debug) logger.info(" rect.y = {}", measureRect.y);
                     xmlOut += getRectangleAttributes(measureRect);
                     xmlOut = closeElementSingle(xmlOut);
                 } 
@@ -144,7 +170,7 @@ public class ExportMeasureCoordinates {
             xmlOut += endElement("system");
         }
         xmlOut += endElement("page");
-        logger.info(xmlOut);
+        if (debug) logger.info(xmlOut);
         if (outToFile){
             xmlWriter.print(xmlOut);
             xmlWriter.close();

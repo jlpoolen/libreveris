@@ -64,9 +64,11 @@ public class Steps
 
     public static final String EXPORT = "EXPORT";
     
-    public static final String EXPORTM = "EXPORTM";
+    public static final String EXPORTC = "EXPORTC";
 
     public static final String PLUGIN = "PLUGIN";
+    
+    public static final String CLOSESCORE = "CLOSESCORE";
 
     /** Ordered sequence of steps */
     private static final List<Step> steps = new ArrayList<>();
@@ -86,7 +88,11 @@ public class Steps
         // Sticking here since we do not want full conversion, don't know how
         // to make optional after this step.
         //
-        addStep(new ExportMStep());
+        addStep(new ExportCStep());
+        addStep(new CloseScoreStep());
+        //
+        // will insert CloseScore here cause automatic interruption? Answer: No.
+        //
         addStep(new TextsStep());
         addStep(new SticksStep());
         addStep(new SymbolsStep());

@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -233,6 +234,7 @@ public class Main
         // Launch desired step on each score in parallel
         for (final String name : parameters.inputNames) {
             final File file = new File(name);
+            
 
             tasks.add(
                     new Callable<Void>()
@@ -251,8 +253,13 @@ public class Main
                                    + parameters.pages)
                                 : "");
                     }
-
-                    if (file.exists()) {
+                    // 
+                    // to accomodate symplic links, we provide an option.  The
+                    // problem may be if the link is broken, who knows what
+                    // will happen
+                    //
+                    if (file.exists() 
+                        || Files.isSymbolicLink(Paths.get(name))) {
                         final Score score = new Score(file);
 
                         try {
@@ -541,7 +548,7 @@ public class Main
 
         private final Constant.Integer processTimeOut = new Constant.Integer(
                 "Seconds",
-                300,
+                900,
                 "Process time-out, specified in seconds");
 
     }

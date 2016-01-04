@@ -30,7 +30,7 @@ import omr.ui.util.WebBrowser;
 
 import omr.util.Memory;
 import omr.util.UriUtil;
-import omr.util.ExportMeasureCoordinates;
+import omr.util.ExportCoordinates;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -170,7 +170,7 @@ public class GuiActions
     public void exportMeasureCoordinates(ActionEvent e)
     {
 	 logger.info("Exporting Measure Coordinates"); 
-         ExportMeasureCoordinates emc = new ExportMeasureCoordinates(); 
+         ExportCoordinates emc = new ExportCoordinates(); 
          emc.export();
     }
     

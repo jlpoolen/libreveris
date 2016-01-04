@@ -38,10 +38,15 @@ import omr.util.StopWatch;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
+
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.*;
+import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.xy.*;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +57,8 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
+
+import java.awt.Color;
 
 /**
  * Class {@code ScaleBuilder} encapsulates the computation of a sheet
@@ -723,6 +730,8 @@ public class ScaleBuilder
         private final int upper;
 
         private final XYSeriesCollection dataset = new XYSeriesCollection();
+        
+        private final XYSeriesCollection datasetLines = new XYSeriesCollection();
 
         //~ Constructors -------------------------------------------------------
         public Plotter (String name,
@@ -756,17 +765,36 @@ public class ScaleBuilder
             }
 
             // Chart
-            JFreeChart chart = ChartFactory.createXYLineChart(
+//            JFreeChart chartLines = ChartFactory.createXYLineChart(
+//                    sheet.getId() + " (" + name + " runs)", // Title
+//                    "Lengths " + ((scale != null) ? scale : "*no scale*"), // X-Axis label
+//                    "Counts", // Y-Axis label
+//                    dataset, // Dataset
+//                    PlotOrientation.VERTICAL, // orientation,
+//                    true, // Show legend
+//                    false, // Show tool tips
+//                    false // urls
+//                    );
+            // use a histogram so we can see the actual buckets values
+            // rather than being left to interpolate for any given length
+	    JFreeChart chart = ChartFactory.createHistogram(
                     sheet.getId() + " (" + name + " runs)", // Title
-                    "Lengths " + ((scale != null) ? scale : "*no scale*"), // X-Axis label
-                    "Counts", // Y-Axis label
+                    "", // X-Axis label - already labeled in chartLines
+                    "", // Y-Axis label - already labeled in chartLines
                     dataset, // Dataset
                     PlotOrientation.VERTICAL, // orientation,
                     true, // Show legend
                     false, // Show tool tips
                     false // urls
                     );
-
+            // have the quorum and spread lines rather than bars
+            XYPlot xyPlot = (XYPlot) chart.getPlot();
+            xyPlot.setDataset(1, datasetLines);
+            XYLineAndShapeRenderer renderer1 = new XYLineAndShapeRenderer();
+            renderer1.setSeriesPaint(0, Color.GREEN); 
+            xyPlot.setRenderer(1, renderer1);
+            xyPlot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
+            
             // Hosting frame
             ChartFrame frame = new ChartFrame(
                     sheet.getId() + " - " + name + " runs",
@@ -785,7 +813,7 @@ public class ScaleBuilder
             XYSeries series = new XYSeries("Quorum@" + pc + ":" + threshold);
             series.add(0, threshold);
             series.add(upper, threshold);
-            dataset.addSeries(series);
+            datasetLines.addSeries(series);
         }
 
         private void plotSpreadLine (String prefix,
@@ -799,7 +827,7 @@ public class ScaleBuilder
                         prefix + "Spread@" + pc + ":" + threshold);
                 series.add((double) peak.getKey().first, threshold);
                 series.add((double) peak.getKey().second, threshold);
-                dataset.addSeries(series);
+                datasetLines.addSeries(series);
             }
         }
 

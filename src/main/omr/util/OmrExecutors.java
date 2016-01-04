@@ -221,7 +221,9 @@ public class OmrExecutors
                             TimeUnit.SECONDS)) {
                         // Cancel currently executing tasks
                         pool.shutdownNow();
-                        logger.warn("Pool {} did not terminate", getName());
+                        logger.warn("[OmrExecutors ] Pool {} did not terminate in {} "
+                                + "graceDelay period", getName(), 
+                                constants.graceDelay.toString());
                     }
                 } catch (InterruptedException ie) {
                     // (Re-)Cancel if current thread also got interrupted
@@ -294,7 +296,7 @@ public class OmrExecutors
         //
         Constant.Integer graceDelay = new Constant.Integer(
                 "seconds",
-                60, //15,
+                120, //15,
                 "Time to wait for terminating tasks");
 
     }
