@@ -136,9 +136,16 @@ public class RunsTableFactory
                                    int length,
                                    int cumul)
         {
+
             // We consider only runs that are longer than minLength
             if (length >= minLength) {
                 final int level = ((2 * cumul) + length) / (2 * length);
+//                if (pos > 730 && pos < 737) 
+//                    logger.info( "pos\t{}\t{}\t{}\t{}\t{}",
+//                    pos, coord, length, cumul, level);
+//                if (coord > 157 && coord < 164 ) 
+//                    logger.info( "coord\t{}\t{}\t{}\t{}\t{}",
+//                    pos, coord, length, cumul, level);
                 table.getSequence(pos)
                         .add(new Run(coord - length, length, level));
             }

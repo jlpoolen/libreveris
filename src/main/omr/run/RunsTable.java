@@ -390,6 +390,122 @@ public class RunsTable
         return runCount;
     }
 
+    //-------------//
+    // getRunStats //
+    //-------------//
+    /**
+     * print tabular information about runs that interest us
+     *
+     * @return string of breakdown by row
+     */
+    public void printRunStats(int lowLimitRunOfInterest) {  
+        int[] stats = new int[dimension.height];
+        int seqPos = 0; 
+        String output = "\nRuns of => " + lowLimitRunOfInterest + "\n"
+                + "Delta Y\tY\tX\tLength\n";
+        int lastSeqPos = 0;
+        for (List<Run> seq : runs) {
+            seqPos++;
+            for (Run run : seq) {
+                if (run.getLength() > lowLimitRunOfInterest - 1){
+                    int deltaY = seqPos - lastSeqPos;
+                    lastSeqPos = seqPos;
+                    output += deltaY + "\t" + seqPos 
+                            + "\t" + run.getStart() + "\t"
+                            + run.getLength() + "\n";
+                }              
+            }
+        }
+        output += "\n";
+        logger.info(output);
+    } 
+    
+    //-------------//
+    // getRunLengthStats //
+    //-------------//
+    /**
+     * Count and return the occurrences of various run lengths
+     *
+     * @return string of breakdown by row
+     */
+    public void printRunLengthStats(int lowLimitRunOfInterest) {  
+        int[] stats = new int[dimension.height];
+         
+        String output = "";
+        for (List<Run> seq : runs) {
+            for (Run run : seq) {
+                stats[run.getLength()]++;                       
+            }
+        }
+        for (int i = 0; i < stats.length; i++){
+            if ( i > lowLimitRunOfInterest - 1 && stats[i] > 0){
+                output += i + "\t" + stats[i] + "\n";
+            }
+            
+        }
+        logger.info(output);
+    } 
+    
+    //-------------//
+    // getRunCount //
+    //-------------//
+    /**
+     * Count and return the total number of runs in this table AND 
+     * break down my row
+     *
+     * @return string of breakdown by row
+     */
+    public String getRunDispersion() {
+        String output = "row#\tCount\tTotal Pixels\tAverage"
+                + "\tLongest Run\tShortest Run"
+                + "\tStart\tEnd\tDiff\n";
+        int seqCount = 0;
+        for (List<Run> seq : runs) {
+            int runCount = 0;
+            int totalPixels = 0;
+            int maxRun = 0;
+            int minRun = 0;
+            int startRuns = 0;
+            int endRuns   = 0;
+            seqCount++;
+            for (Run run : seq) {
+                runCount++;
+                 if (startRuns == 0){
+                     // the first run may be the leftmost.
+                     startRuns = run.getStart();
+                 } else {
+                     // something later may be more leftmost
+                     if (run.getStart() < startRuns){
+                         startRuns = run.getStart();
+                     }
+                 }
+                 if (run.getStop() > endRuns) {
+                     endRuns = run.getStop();
+                 }
+                totalPixels += run.getLength();
+                if (run.getLength() > maxRun){
+                    maxRun = run.getLength(); 
+                }
+                // if we only have 1 run, min will remain at 0'
+                // Only with 2 or more unequal runs will minLength change
+                if (run.getLength() < maxRun){
+                    minRun = run.getLength();
+                }
+            }
+            if (runCount > 0){
+                double avgLength = ((double) totalPixels)/runCount;
+                output += seqCount + "\t" + runCount 
+                        + "\t" + totalPixels  
+                        + "\t" + String.valueOf(avgLength) 
+                        + "\t" + maxRun 
+                        + "\t" + minRun 
+                        + "\t" + startRuns
+                        + "\t" + endRuns 
+                        + "\t" + (endRuns - startRuns) + "\n";
+            }      
+        }
+        return output + "\n";
+    }
     //---------------//
     // getRunService //
     //---------------//
