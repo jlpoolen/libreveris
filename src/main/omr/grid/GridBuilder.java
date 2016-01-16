@@ -199,7 +199,7 @@ public class GridBuilder
         try {
             // We already have all foreground pixels as vertical runs
             RunsTable wholeVertTable = sheet.getWholeVerticalTable();
-
+            RunsTable wholeHorzTable = sheet.getWholeHorizontalTable();
             // Note: from that point on, we could simply discard the sheet picture
             // and save memory, since wholeVertTable contains all foreground pixels.
             // For the time being, it is kept alive for display purpose, and to
@@ -208,6 +208,7 @@ public class GridBuilder
             // View on the initial runs (just for information)
             if (showRuns) {
                 runsViewer.display(wholeVertTable);
+                runsViewer.display(wholeHorzTable);
             }
 
             // hLag creation
@@ -215,7 +216,7 @@ public class GridBuilder
 
             RunsTable longVertTable = linesRetriever.buildLag(
                     wholeVertTable,
-                    showRuns);
+                    showRuns,wholeHorzTable);
 
             // vLag creation
             watch.start("barsRetriever.buildLag");

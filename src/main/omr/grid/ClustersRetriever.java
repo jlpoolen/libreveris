@@ -210,7 +210,10 @@ public class ClustersRetriever
         retrievePopularSize();
 
         // Check relevance
-        if ((popSize < 4) || (popSize > 6)) {
+        //if ((popSize < 4) || (popSize > 6)) {
+        // below jlp modification, "3" popped out for Tremolo example and
+        // caused halt at this value
+        if ((popSize < 3) || (popSize > 6)) {
             logger.info("{}Giving up spurious line comb size: {}",
                     sheet.getLogPrefix(), popSize);
 

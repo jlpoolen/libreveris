@@ -155,7 +155,7 @@ public class LinesRetriever
      * @return the vertical runs too long to be part of any staff line
      */
     public RunsTable buildLag (RunsTable wholeVertTable,
-                               boolean showRuns)
+                               boolean showRuns, RunsTable wholeHorzTable)
     {
         hLag = new BasicLag("hLag", Orientation.HORIZONTAL);
 
@@ -169,13 +169,52 @@ public class LinesRetriever
         } catch (Exception ex) {
             logger.warn("Cannot create lines filament factory", ex);
         }
-
+        
+        // start JLP
+        RunsTable longHorizTable = new RunsTable(
+                "longHorizontal",
+                HORIZONTAL,
+                new Dimension(sheet.getWidth(), sheet.getHeight()));  
+        // Remove runs whose height is larger than line thickness
+        RunsTable shortHorizTable = wholeHorzTable.copy("shortHorizontal")
+                .purge(new Predicate<Run>()
+                {
+                    @Override
+                    public final boolean check (Run run)
+                    {
+                        //return run.getLength() > params.maxVerticalRunLength;
+                        //TODO: create parameter for integer value below
+                        return run.getLength() > 500;
+                    }
+                },
+                longHorizTable);
+        if (showRuns) {
+            runsViewer.display(longHorizTable);
+            System.out.println(longHorizTable.getRunDispersion());
+            //wholeHorzTable.printRunLengthStats(200);  // 200 @400dpi = 1/2 "
+            wholeHorzTable.printRunStats(200);
+            logger.info(longHorizTable.getRunDispersion());
+            runsViewer.display(shortHorizTable);
+        }
+        // create a vertical table derived from the long horizontal
+        // to "include" with the short vertical table
+        // below.
+        RunsTable fromLongHorizontal = new RunsTableFactory(
+                VERTICAL,
+                longHorizTable.getBuffer(),0
+        ).createTable("transitionTable");
+        // end JLP
+  
+        
+         
         // To record the purged vertical runs
         RunsTable longVertTable = new RunsTable(
                 "long-vert",
                 VERTICAL,
                 new Dimension(sheet.getWidth(), sheet.getHeight()));
 
+
+        
         // Remove runs whose height is larger than line thickness
         RunsTable shortVertTable = wholeVertTable.copy("short-vert").purge(
                 new Predicate<Run>()
@@ -215,7 +254,11 @@ public class LinesRetriever
                     }
                 },
                 shortHoriTable);
-
+        // jlp start
+        // try combining both tables so long horizontals fill in what was removed
+        // by long verticals
+        longHoriTable.include(longHorizTable);
+        // jlp end
         if (showRuns) {
             runsViewer.display(shortHoriTable);
             runsViewer.display(longHoriTable);
