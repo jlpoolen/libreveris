@@ -142,6 +142,9 @@ public class Sheet
 
     /** Table of all vertical (foreground) runs */
     private RunsTable wholeVerticalTable;
+    
+    /** Table of all horizontal (foreground) runs */
+    private RunsTable wholeHorizontalTable;
 
     /** Initial skew value */
     private Skew skew;
@@ -1514,6 +1517,32 @@ public class Sheet
         this.wholeVerticalTable = wholeVerticalTable;
     }
 
+    //-------- JLPOOLE added ---------------//
+    //-----------------------//
+    // getWholeHorizontalTable //
+    //-----------------------//
+    /**
+     * Get access to the whole table of horizontal runs.
+     *
+     * @return the wholeHorizontalTable
+     */
+    public RunsTable getWholeHorizontalTable ()
+    {
+        return wholeHorizontalTable;
+    }
+    // setWholeHorizontalTable //
+    //-----------------------//
+    /**
+     * Remember the whole table of horizontal runs.
+     *
+     * @param wholeVerticalTable the wholeVerticalTable to set
+     */
+    public void setWholeHorizontalTable (RunsTable wholeHorizontalTable)
+    {
+        this.wholeHorizontalTable = wholeHorizontalTable;
+    }
+    // ------------ end JLP -----------------
+    
     //~ Inner Classes ----------------------------------------------------------
     //-----------//
     // Constants //

@@ -205,6 +205,17 @@ public class ScaleBuilder
         RunsTable wholeVertTable = factory.createTable("whole");
         sheet.setWholeVerticalTable(wholeVertTable);
         factory = null; // To allow garbage collection ASAP
+        
+        // start JLP
+        factory = new RunsTableFactory(
+                Orientation.HORIZONTAL,
+                desc.getFilter(picture),
+                0);
+        RunsTable wholeHorzTable = factory.createTable("wholeHorz");
+        sheet.setWholeHorizontalTable(wholeHorzTable);
+        factory = null; // To allow garbage collection ASAP
+        logger.info("[ScaleBuilder 217] After creating JLP's wholeHorz Table.");
+        // end JLP
 
         if (constants.printWatch.isSet()) {
             watch.print();
@@ -787,12 +798,14 @@ public class ScaleBuilder
                     false, // Show tool tips
                     false // urls
                     );
-            // have the quorum and spread lines rather than bars
+            // have the quorum and spread be lines rather than bars
             XYPlot xyPlot = (XYPlot) chart.getPlot();
             xyPlot.setDataset(1, datasetLines);
             XYLineAndShapeRenderer renderer1 = new XYLineAndShapeRenderer();
             renderer1.setSeriesPaint(0, Color.GREEN); 
             xyPlot.setRenderer(1, renderer1);
+            // "FORWARD" causes the added dataset of 
+            // lines to be overlayed on histogram bars
             xyPlot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
             
             // Hosting frame
